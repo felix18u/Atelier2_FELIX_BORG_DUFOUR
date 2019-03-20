@@ -2,6 +2,8 @@
 <html>
 
 <head>
+    <title>GeoQuizz - Backoffice</title>
+    <meta charset="utf-8">
     <!-- Script vuejs -->
     <script src="https://cdn.jsdelivr.net/npm/vue@2.5.22/dist/vue.js"></script>
 
@@ -30,8 +32,8 @@
 <body>
     <div id="application">
         <nav class="navbar navbar-expand-lg navbar-light bg-light">
-            <button class="navbar-brand" v-on:click="afficher('photo')">Photo</button>
-            <button class="navbar-brand" v-on:click="afficher('serie')">Serie</button>
+            <button class="navbar-item  " v-on:click="afficher('photo')">Photo</button>
+            <button class="navbar-item" v-on:click="afficher('serie')">Serie</button>
         </nav>
 
         <!-- ONGLET CREATION DE SERIE -->
@@ -50,7 +52,7 @@
                     <div class="col">
                         <input type="text" placeholder="Nom de la ville" v-model="nomSerie">
                         <p>Référence de la carte</p>
-                        <button v-on:click="fixerPositionSerie">Fixer la position de la carte</button>
+                        <button class="btn btn-primary" v-on:click="fixerPositionSerie">Fixer la position de la carte</button>
                         <p>Nord Est</p>
                         <ul>
                             <li>latitude : {{ serieNordEst.lat }}</li>
@@ -65,7 +67,7 @@
                         <p>Distance entre les deux points : {{ this.tailleCarte }}</p>
                         <p>marge d'erreurs : {{ this.echelleCarte }}</p>
 
-                        <button v-on:click="ajouterSerie" v-on:click="ajouterSerie(nomSerie)">Ajouter la série</button>
+                        <button class="btn btn-primary" v-on:click="ajouterSerie" v-on:click="ajouterSerie(nomSerie)">Ajouter la série</button>
                     </div>
                     <div class="col">
                         <div id="mapSerie"></div>
@@ -136,7 +138,7 @@
                 </div>
                 <div class="row">
                     <div class="col">
-                        <button v-on:click="onUpload">Ajouter la photo</button>
+                        <button class="btn btn-primary" v-on:click="onUpload">Ajouter la photo</button>
                     </div>
                 </div>
             </div>

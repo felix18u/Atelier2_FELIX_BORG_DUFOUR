@@ -42,7 +42,7 @@ $ docker exec -u postgres postgres psql postgres postgres -f docker-entrypoint-i
 
 Ces commandes vont copier le fichier data.sql dans le container postgres puis executer le script sql
 
-###Mobile
+### Mobile
 
 Pour utiliser la partie mobile, vous devez utiliser pagekite qui permettra d'acceder à l'API via internet.
 Il est nécessaire d'avoir un compte pagekite.

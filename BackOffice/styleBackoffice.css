@@ -37,3 +37,19 @@
     background-color: red;
     color: white;
 }
+
+.navbar-item{
+    background-color: whitesmoke;
+    border: none;
+    color: black;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+}
+
+.navbar{
+    background-color: whiteSmoke;
+    margin-bottom: 20px;
+}
