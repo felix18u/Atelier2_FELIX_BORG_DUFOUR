@@ -5,7 +5,7 @@
 •  Maven <br>
 •  Docker <br>
 •  Docker-compose <br>
-
+•  Pagekite <br>
 
 ## Installation
 
@@ -41,6 +41,16 @@ $ docker exec -u postgres postgres psql postgres postgres -f docker-entrypoint-i
 
 
 Ces commandes vont copier le fichier data.sql dans le container postgres puis executer le script sql
+
+###Mobile
+
+Pour utiliser la partie mobile, vous devez utiliser pagekite qui permettra d'acceder à l'API via internet.
+Il est nécessaire d'avoir un compte pagekite.
+Pour cela, quand les containers docker sont initialisés lancez la commande : 
+
+```sh
+$ pagekite.py (IP du docker):8081 (votre adresse de compte pagekite) 
+```
 
 
 ## Utilisation : 
