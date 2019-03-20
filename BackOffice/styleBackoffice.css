@@ -1,0 +1,39 @@
+#mapSerie { 
+    height: 500px;
+    width: 500px;
+ }
+
+#mapPhoto { 
+    height: 500px;
+    width: 500px;
+ }
+
+#lienCreationSerie {
+    color: blue;
+    text-decoration: underline;
+}
+
+#lienCreationSerie:hover {
+    cursor: pointer;
+}
+
+#preview {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#preview img {
+    max-width: 100%;
+    max-height: 500px;
+}
+
+.messageSuccess{
+    background-color: green;
+    color: white;
+}
+
+.messageEchec{
+    background-color: red;
+    color: white;
+}

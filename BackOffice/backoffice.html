@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <!-- Script vuejs -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.5.22/dist/vue.js"></script>
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css"
+        integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA=="
+        crossorigin="" />
+
+    <!-- Mon csss -->
+    <link rel="stylesheet" type="text/css" href="styleBackoffice.css">
+
+    <!-- Script leaflet -->
+    <script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"
+        integrity="sha512-QVftwZFqvtRNi0ZyCtsznlKSWOStnDORoefr1enyq5mVL4tmKB3S/EnC3rRJcxCPavG10IcrVGSmPh6Qw5lwrg=="
+        crossorigin=""></script>
+
+    <script src="https://npmcdn.com/leaflet-geometryutil"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+</head>
+
+<body>
+    <div id="application">
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <button class="navbar-brand" v-on:click="afficher('photo')">Photo</button>
+            <button class="navbar-brand" v-on:click="afficher('serie')">Serie</button>
+        </nav>
+
+        <!-- ONGLET CREATION DE SERIE -->
+        <div v-if="affichage === 'serie'">
+            <div class="container">
+                <div class="row alert"
+                    v-bind:class="{ 'messageSuccess': messageSerieSuccess, 'messageEchec': !messageSerieSuccess }"
+                    v-if="messageSerie != null" style="margin-top:20px">
+                    {{ messageSerie }}
+                </div>
+                <div class="row">
+                    <h2>Créer une série</h2>
+
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <input type="text" placeholder="Nom de la ville" v-model="nomSerie">
+                        <p>Référence de la carte</p>
+                        <button v-on:click="fixerPositionSerie">Fixer la position de la carte</button>
+                        <p>Nord Est</p>
+                        <ul>
+                            <li>latitude : {{ serieNordEst.lat }}</li>
+                            <li>longitude : {{ serieNordEst.lng }}</li>
+                        </ul>
+                        <p>Sud Ouest</p>
+                        <ul>
+                            <li>latitude : {{ serieSudOuest.lat }}</li>
+                            <li>longitude : {{ serieSudOuest.lng }}</li>
+                        </ul>
+
+                        <p>Distance entre les deux points : {{ this.tailleCarte }}</p>
+                        <p>marge d'erreurs : {{ this.echelleCarte }}</p>
+
+                        <button v-on:click="ajouterSerie" v-on:click="ajouterSerie(nomSerie)">Ajouter la série</button>
+                    </div>
+                    <div class="col">
+                        <div id="mapSerie"></div>
+                    </div>
+                </div>
+                <div class="row">
+                    <h2>Liste des séries</h2>
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th scope="col">ID</th>
+                                <th scope="col">Nom</th>
+                                <th scope="col">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for='serie in series'>
+                                <td>{{serie.id}}</td>
+                                <td>{{serie.ville}}</td>
+                                <td><button type="button" class="btn btn-danger"
+                                        v-on:click="deleteSerie(serie.id)">Supprimer</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ONGLET AJOUT DE PHOTO -->
+        <div v-if="affichage === 'photo'">
+            <div class="container">
+
+                <div class="row alert"
+                    v-bind:class="{ 'messageSuccess': messagePhotoSuccess, 'messageEchec': !messagePhotoSuccess }"
+                    v-if="messagePhoto != null" style="margin-top:20px">
+                    {{ messagePhoto }}
+                </div>
+                <div class="row">
+                    <h2>Ajouter une photo</h2>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <div class="form-group">
+                            <label>Choisissez la ville où vous voulez ajouter votre photo</label>
+                            <select class="form-control" @change="onSerieChanged" v-model="selectedSerie">
+                                <option v-for="serie in series" :value="serie.id">{{ serie.ville }}</option>
+                            </select>
+                            <a v-on:click="afficher('serie')" id="lienCreationSerie">La série sur la ville que vous
+                                cherchez n'existe pas ? Créez la !</a>
+
+                            <p>Position de la photo</p>
+                            <!-- Afficher position ici -->
+                            <p>Latitude : {{ ajoutPhotoLatitude }}</p>
+                            <p>Longitude : {{ ajoutPhotoLongitude }}</p>
+
+                            <input type="file" id="file" ref="file" @change="onFileChanged">
+                            <div id="preview">
+                                <img v-if="ajoutPhotoUrl" :src="ajoutPhotoUrl" />
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div id="mapPhoto" v-on:click="getClickPosition"></div>
+
+                    </div>
+
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <button v-on:click="onUpload">Ajouter la photo</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.13/vue.js"></script>
+    <script>
+        var app = new Vue({
+            el: "#application",
+            data: {
+                /* --------- GENERAL --------- */
+                affichage: 'serie',
+                ajoutPhotoUrl: null,
+                host: "192.168.99.100",
+
+                /* --------- AFFICHAGE PHOTO --------- */
+                ajoutPhotoLatitude: null,
+                ajoutPhotoLongitude: null,
+                ajoutPhotoUrl: null,
+                selectedSerie: 'nancy',
+                mapPhotoMarker: null,
+                file: null,
+                messagePhoto: null,
+                messagePhotoSuccess: false,
+                selectedFile: null,
+                idImageSend: null,
+
+                /* --------- AFFICHAGE SERIE --------- */
+                nomSerie: '',
+                serieNordEst: { "lat": null, "lng": null },
+                serieSudOuest: { "lat": null, "lng": null },
+                tailleCarte: null,
+                echelleCarte: null,
+                messageSerie: null,
+                messageSerieSuccess: false,
+
+
+                /* --------- Emuler les APIs --------- */
+
+                series: null,
+                photos: [
+                    { id: "1", desc: "Cathédrale", position: "", url: "" },
+                    { id: "2", desc: "Tour", position: "", url: "" },
+                    { id: "3", desc: "Chateau", position: "", url: "" },
+                ],
+
+                /* LEAFLET PHOTO */
+                mapPhoto: null,
+                tileLayerPhoto: null,
+
+                /* LEAFTLET SERIE */
+                mapSerie: null,
+                tileLayerSerie: null,
+                coordFrance: [
+                    [53.19418713838918, 13.54394853115082],
+                    [37.95459411352359, -8.428707718849184],
+                ],
+
+            },
+            methods: {
+
+                /* --------- GENERAL --------- */
+                afficher(page) {
+                    if (this.affichage == 'photo') {
+                        if (page == 'serie') {
+                            this.affichage = page
+                            setTimeout(() => this.initMapSerie(), 1);
+                            this.messagePhoto = null;
+                        }
+                    }
+                    if (this.affichage == 'serie') {
+                        if (page == 'photo') {
+                            this.mapPhotoMarker = null
+                            this.ajoutPhotoLatitude = null
+                            this.ajoutPhotoLongitude = null
+                            this.affichage = page
+                            setTimeout(() => this.initMapPhoto(
+                                [
+                                    [parseFloat(new Array(new Array(this.series[0].lat1, this.series[0].lon1), new Array(this.series[0].lat2, this.series[0].lon2))),
+                                    parseFloat(this.series[0].lon1)], [parseFloat(this.series[0].lat2),
+                                    parseFloat(this.series[0].lon2)]]), 1);
+                            this.messageSerie = null;
+                        }
+                    }
+                },
+
+                /* --------- AFFICHAGE SERIE --------- */
+                ajouterSerie(nomSerie) {
+                    /* Méthode qui permet d'ajouter la série dans la BDD (via POST)*/
+                    if (this.nomSerie.trim() == '' || this.tailleCarte == null) {
+                        this.messageSerieSuccess = false
+                        this.messageSerie = "Tous les champs doivent être complétés pour créer une nouvelle série"
+                    } else {
+                        axios.post('http://' + this.host + ':8081/series', {
+                            ville: this.nomSerie,
+                            lat1: "" + this.serieNordEst.lat,
+                            lon1: "" + this.serieNordEst.lng,
+                            lat2: "" + this.serieSudOuest.lat,
+                            lon2: "" + this.serieSudOuest.lng,
+                            dist: this.echelleCarte,
+                        }, {
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+
+                                proxy: {
+                                    host: 'http://www-cache.iutnc.univ-lorraine.fr/',
+                                    port: 3128
+                                },
+
+                            })
+                            .then(response => {
+                                this.messageSerie = "Série Ajoutée"
+                                this.messageSerieSuccess = true
+                                this.getAllSeries();
+                            })
+                            .catch(error => {
+                                console.log(error)
+                            })
+                            .finally(() => {
+
+
+                            })
+                    }
+                },
+
+                /* --------- AFFICHAGE PHOTO --------- */
+
+                onUpload() {
+                    /* Méthode qui upload la photo avec les informations de géolocalisation (via POST)*/
+                    if (this.ajoutPhotoLatitude == null) {
+                        this.messagePhotoSucces = false
+                        this.messagePhoto = "Tous les champs doivent être complétés pour ajouter une photo"
+                    } else {
+
+                        var formData = new FormData();
+                        formData.append('file', this.selectedFile)
+
+                        axios.post('http://' + this.host + ':8081/photos/upload/' + this.selectedSerie, formData, {
+                            headers: {
+                                'Content-Type': 'multipart/form-data'
+                            }
+                        }).then(response => {
+                            this.idImageSend = response.data.id
+                        })
+                            .catch(error => {
+                            })
+                            .finally(() => {
+
+                                this.selectedFile = null
+
+                                this.ajoutPhotoUrl = null
+                                document.getElementById("file").value = "";
+                                this.mapPhotoMarker.remove()
+                                this.mapPhotoMarker = null
+                                this.putModifyImage()
+                                this.messagePhotoSuccess = true
+                                this.messagePhoto = "Photo ajoutée"
+
+                            })
+                    }
+                },
+
+                deleteSerie(id) {
+                    axios.delete('http://' + this.host + ':8081/series/' + id, {}, {
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    },
+                    ).then(response => {
+                        this.getAllSeries()
+                        this.messageSerieSuccess = false
+                        this.messageSerie = "Série supprimée"
+                    }).catch(error => {
+                    }).finally(() => {
+                    })
+                },
+
+                putModifyImage() {
+                    /* Modifie la position de l'image qui vient d'être envoyé */
+                    /* return none */
+                    console.log(this.ajoutPhotoLongitude)
+                    axios.put('http://' + this.host + ':8081/photos/info/' + this.idImageSend, {
+                        lon: "" + this.ajoutPhotoLongitude,
+                        lat: "" + this.ajoutPhotoLatitude
+                    }, {
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        },
+                    ).then(response => {
+                        console.log(response)
+                        this.ajoutPhotoLatitude = null
+                        this.ajoutPhotoLongitude = null
+                    })
+                        .catch(error => {
+                        })
+                        .finally(() => {
+                        })
+                },
+
+                onFileChanged(event) {
+                    /* Méthode qui génère un aperçu de la photo chargée lors d'ajout de photo */
+                    this.selectedFile = event.target.files[0]
+                    const file = event.target.files[0]
+                    if (file) {
+                        this.ajoutPhotoUrl = URL.createObjectURL(file)
+                    }
+
+                },
+
+                getClickPosition(event) {
+                    /* Retourne la position du click sur la map photo */
+                    var latlng = this.mapPhoto.mouseEventToLatLng(event)
+                    this.ajoutPhotoLatitude = latlng.lat
+                    this.ajoutPhotoLongitude = latlng.lng
+                    if (this.mapPhotoMarker == null) {
+                        this.mapPhotoMarker = new L.marker([this.ajoutPhotoLatitude, this.ajoutPhotoLongitude]);
+                        this.mapPhotoMarker.addTo(this.mapPhoto);
+                    } else {
+                        this.mapPhotoMarker.setLatLng([this.ajoutPhotoLatitude, this.ajoutPhotoLongitude]);
+                    }
+                },
+
+                onSerieChanged() {
+                    this.ajoutPhotoLatitude = null
+                    this.ajoutPhotoLongitude = null
+                    for (serie of this.series) {
+                        if (serie.id == this.selectedSerie) {
+                            let bounds = new Array(new Array(serie.lat1, serie.lon1), new Array(serie.lat2, serie.lon2))
+                            this.mapPhoto.fitBounds(bounds)
+                        }
+                    }
+                },
+
+                /* LEAFLET */
+                fixerPositionSerie() {
+                    let bounds = this.mapSerie.getBounds();
+                    this.serieNordEst.lat = bounds._northEast.lat
+                    this.serieNordEst.lng = bounds._northEast.lng
+                    this.serieSudOuest.lat = bounds._southWest.lat
+                    this.serieSudOuest.lng = bounds._southWest.lng
+                    this.getTailleMap()
+                },
+
+                getTailleMap() {
+
+                    let pointNord = L.latLng([this.serieNordEst.lat, this.serieNordEst.lng])
+
+                    let pointSud = L.latLng([this.serieSudOuest.lat, this.serieSudOuest.lng])
+                    this.tailleCarte = L.GeometryUtil.length([pointSud, pointNord])
+                    this.echelleCarte = Math.round(this.tailleCarte / 5)
+                },
+
+                initMapSerie() {
+                    this.mapSerie = L.map('mapSerie').fitBounds(this.coordFrance)
+                    this.tileLayerSerie = L.tileLayer(
+                        'https://cartodb-basemaps-{s}.global.ssl.fastly.net/rastertiles/voyager/{z}/{x}/{y}.png',
+                        {
+                            maxZoom: 18,
+                            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy; <a href="https://carto.com/attribution">CARTO</a>',
+                        }
+                    );
+                    this.tileLayerSerie.addTo(this.mapSerie);
+                },
+
+                initMapPhoto(coord) {
+                    this.mapPhoto = L.map('mapPhoto', { zoomControl: false }).fitBounds(coord)
+                    this.tileLayerPhoto = L.tileLayer(
+                        'https://cartodb-basemaps-{s}.global.ssl.fastly.net/rastertiles/voyager/{z}/{x}/{y}.png',
+                        {
+                            maxZoom: 18,
+                            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy; <a href="https://carto.com/attribution">CARTO</a>',
+                        }
+                    );
+                    this.tileLayerPhoto.addTo(this.mapPhoto);
+                    this.mapPhoto.dragging.disable()
+                    this.mapPhoto.touchZoom.disable()
+                    this.mapPhoto.doubleClickZoom.disable()
+                    this.mapPhoto.scrollWheelZoom.disable()
+                },
+
+                getAllSeries() {
+                    axios
+                        .get('http://' + this.host + ':8081/series', {
+                            proxy: {
+                                host: 'http://www-cache.iutnc.univ-lorraine.fr/',
+                                port: 3128
+                            },
+                        })
+                        .then(response => {
+                            this.series = response.data
+
+                        })
+                        .catch(error => {
+                        })
+                        .finally(() => {
+                        })
+                },
+            },
+            created() {
+
+            },
+
+            computed: {
+
+            },
+
+            mounted() {
+                this.initMapSerie();
+                this.getAllSeries();
+            },
+
+        })
+    </script>
+</body>
+
+</html>
