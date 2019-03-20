@@ -9,10 +9,10 @@
 
 ## Installation
 
-Dans un premier temps, verifier que l'ip de votre machine docker correspond à celle des applications
+Dans un premier temps, verifier que l'ip de votre machine docker correspond à celle des applications 
 
-•  Modifier la variable 'host' dans la partie 'data' de l'instance de Vue du fichier player.js <br>
-•  Modifier la variable 'host' dans la partie 'data' de l'instance de Vue du fichier backoffice.html <br>
+•  Modifier la variable 'host' (par défaut : localhost) dans la partie 'data' de l'instance de Vue du fichier player.js <br>
+•  Modifier la variable 'host' (par défaut : localhost) dans la partie 'data' de l'instance de Vue du fichier backoffice.html <br>
 
 Build des deux APIs depuis la racine du projet : 
 ```sh
